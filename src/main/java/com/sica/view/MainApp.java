@@ -77,7 +77,8 @@ public class MainApp extends Application {
         stage.setTitle("SICA - Sistema Integrado de Control de Acceso");
 
         // Construir la escena de Login
-        Scene loginScene = crearEscenaLogin();
+        Scene loginScene = crearEscenaLogin
+        ();
         stage.setScene(loginScene);
         stage.setResizable(false);
         stage.show();
