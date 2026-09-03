@@ -1,0 +1,26 @@
+src\main\java\com\sica\test\SicaFase3Test.java:259: error: cannot find symbol
+        private final List<BitacoraAuditoria> DB = new ArrayList<>();
+                           ^
+  symbol:   class BitacoraAuditoria
+  location: class BitacoraDAOInMemoryTest
+src\main\java\com\sica\test\SicaFase3Test.java:263: error: cannot find symbol
+        public BitacoraAuditoria registrar(BitacoraAuditoria b) {
+                                           ^
+  symbol:   class BitacoraAuditoria
+  location: class BitacoraDAOInMemoryTest
+src\main\java\com\sica\test\SicaFase3Test.java:263: error: cannot find symbol
+        public BitacoraAuditoria registrar(BitacoraAuditoria b) {
+               ^
+  symbol:   class BitacoraAuditoria
+  location: class BitacoraDAOInMemoryTest
+src\main\java\com\sica\test\SicaFase3Test.java:270: error: cannot find symbol
+        public List<BitacoraAuditoria> listarTodos() {
+                    ^
+  symbol:   class BitacoraAuditoria
+  location: class BitacoraDAOInMemoryTest
+src\main\java\com\sica\test\SicaFase3Test.java:275: error: cannot find symbol
+        public List<BitacoraAuditoria> listarPorUsuario(Long uId) {
+                    ^
+  symbol:   class BitacoraAuditoria
+  location: class BitacoraDAOInMemoryTest
+5 errors
