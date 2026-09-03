@@ -1,7 +1,9 @@
 package com.sica.view;
 
+import com.sica.controller.FuncionarioController;
 import com.sica.controller.GuardaController;
 import com.sica.controller.LoginController;
+import com.sica.controller.SupervisorController;
 import com.sica.dao.BitacoraAuditoriaDAO;
 import com.sica.dao.PersonaDAO;
 import com.sica.dao.VisitaDAO;
@@ -15,7 +17,6 @@ import com.sica.service.AuthService;
 import com.sica.service.VisitaService;
 import com.sica.service.impl.AuthServiceImpl;
 import com.sica.service.impl.VisitaServiceImpl;
-import com.sica.strategy.AccesoPreRegistrado;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -36,13 +37,12 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Aplicación Principal JavaFX (Presentation Layer - Patrón MVC).
- * Proporciona la ventana gráfica de Login construida en código Java nativo (sin
- * FXML),
- * enlaza el controlador LoginController y muestra la gestión de alertas (Alert)
- * ante
- * situaciones de éxito o excepciones de seguridad RBAC
- * (AccesoDenegadoException).
+ * Aplicación Principal JavaFX (Presentation Layer - Patrón MVC & Patrones
+ * Consolidados).
+ * Coordina la autenticación (LoginController), los dashboards gráficos por rol
+ * (GuardaDashboardView, FuncionarioDashboardView),
+ * el proxy de seguridad (SeguridadVisitaServiceProxy) y la generación de
+ * reportes con Stream API (SupervisorController).
  * 
  * @author Arquitectura SICA
  * @version 1.0
@@ -52,6 +52,7 @@ public class MainApp extends Application {
     private AuthService authService;
     private LoginController loginController;
     private VisitaService servicioVisitasBase;
+    private PersonaDAO personaDAO;
     private BitacoraAuditoriaDAO bitacoraDAO;
     private Stage primaryStage;
 
@@ -63,7 +64,7 @@ public class MainApp extends Application {
         this.loginController = new LoginController(authService);
 
         // Repositorios en memoria para ejecución autónoma de la vista
-        PersonaDAO personaDAO = new PersonaDAOInMemoryLocal();
+        this.personaDAO = new PersonaDAOInMemoryLocal();
         VisitaDAO visitaDAO = new VisitaDAOInMemoryLocal();
         this.bitacoraDAO = new BitacoraDAOInMemoryLocal();
 
@@ -77,10 +78,9 @@ public class MainApp extends Application {
         stage.setTitle("SICA - Sistema Integrado de Control de Acceso");
 
         // Construir la escena de Login
-        Scene loginScene = crearEscenaLogin
-        ();
+        Scene loginScene = crearEscenaLogin();
         stage.setScene(loginScene);
-        stage.setResizable(false);
+        stage.setResizable(true);
         stage.show();
     }
 
@@ -113,8 +113,8 @@ public class MainApp extends Application {
         lblUser.setTextFill(Color.web("#cdd6f4"));
 
         TextField txtUsername = new TextField();
-        txtUsername.setPromptText("Ej. admin, guardia, operador");
-        txtUsername.setPrefWidth(240);
+        txtUsername.setPromptText("Ej. admin, guardia, funcionario, operador");
+        txtUsername.setPrefWidth(260);
         txtUsername.setStyle(
                 "-fx-background-color: #313244; -fx-text-fill: #cdd6f4; -fx-font-size: 14px; -fx-background-radius: 5;");
 
@@ -124,7 +124,7 @@ public class MainApp extends Application {
 
         PasswordField txtPassword = new PasswordField();
         txtPassword.setPromptText("••••••••");
-        txtPassword.setPrefWidth(240);
+        txtPassword.setPrefWidth(260);
         txtPassword.setStyle(
                 "-fx-background-color: #313244; -fx-text-fill: #cdd6f4; -fx-font-size: 14px; -fx-background-radius: 5;");
 
@@ -135,7 +135,7 @@ public class MainApp extends Application {
 
         // Botón de Ingreso Principal
         Button btnIngresar = new Button("INGRESAR AL SISTEMA");
-        btnIngresar.setPrefWidth(260);
+        btnIngresar.setPrefWidth(280);
         btnIngresar.setStyle(
                 "-fx-background-color: #89b4fa; -fx-text-fill: #11111b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5; -fx-cursor: hand;");
 
@@ -149,33 +149,39 @@ public class MainApp extends Application {
         HBox boxBotonesPrueba = new HBox(10);
         boxBotonesPrueba.setAlignment(Pos.CENTER);
 
-        Button btnQuickAdmin = new Button("Admin (Total)");
+        Button btnQuickAdmin = new Button("Admin");
         btnQuickAdmin.setOnAction(e -> {
             txtUsername.setText("admin");
             txtPassword.setText("admin123");
         });
 
-        Button btnQuickGuardia = new Button("Guardia (Accesos)");
+        Button btnQuickGuardia = new Button("Guardia");
         btnQuickGuardia.setOnAction(e -> {
             txtUsername.setText("guardia");
             txtPassword.setText("guardia123");
         });
 
-        Button btnQuickSinPermisos = new Button("Operador (Sin Permisos)");
-        btnQuickSinPermisos.setOnAction(e -> {
+        Button btnQuickFunc = new Button("Funcionario");
+        btnQuickFunc.setOnAction(e -> {
+            txtUsername.setText("funcionario");
+            txtPassword.setText("func123");
+        });
+
+        Button btnQuickOperador = new Button("Operador (Sin Permisos)");
+        btnQuickOperador.setOnAction(e -> {
             txtUsername.setText("operador");
             txtPassword.setText("operador123");
         });
 
-        boxBotonesPrueba.getChildren().addAll(btnQuickAdmin, btnQuickGuardia, btnQuickSinPermisos);
+        boxBotonesPrueba.getChildren().addAll(btnQuickAdmin, btnQuickGuardia, btnQuickFunc, btnQuickOperador);
 
         root.getChildren().addAll(lblTitulo, lblSubtitulo, grid, btnIngresar, lblPruebas, boxBotonesPrueba);
-        return new Scene(root, 520, 440);
+        return new Scene(root, 600, 480);
     }
 
     /**
-     * Procesa la solicitud de login capturando excepciones y mostrando
-     * retroalimentación en Alertas JavaFX.
+     * Procesa la solicitud de login capturando excepciones y desplegando los
+     * dashboards por rol.
      */
     private void procesarLogin(String username, String password) {
         try {
@@ -185,20 +191,12 @@ public class MainApp extends Application {
             // Crear el Proxy de Seguridad RBAC para las operaciones del usuario
             VisitaService proxySeguridad = new SeguridadVisitaServiceProxy(servicioVisitasBase, usuarioLogueado);
 
-            // Notificar éxito mediante Alert JavaFX
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Sesión Iniciada",
-                    "¡Bienvenido a SICA, " + usuarioLogueado.getUsername() + "!",
-                    "Rol Asignado: "
-                            + (usuarioLogueado.getRol() != null ? usuarioLogueado.getRol().getNombre() : "Sin Rol") +
-                            "\nEstado de Cuenta: ACTIVA");
-
-            // Demostrar prueba de permiso RBAC con el Proxy
-            probarOperacionProxyGuardia(proxySeguridad, usuarioLogueado);
+            // Desplegar Ventana Principal de Dashboards por Rol
+            mostrarDashboardConsolidado(usuarioLogueado, proxySeguridad);
 
         } catch (AccesoDenegadoException ex) {
-            // Capturar violación de seguridad RBAC o credenciales y mostrar Alert ERROR
             mostrarAlerta(Alert.AlertType.ERROR, "Error de Autenticación / RBAC",
-                    "Violación de Seguridad o Credenciales Incortectas",
+                    "Violación de Seguridad o Credenciales Incorrectas",
                     ex.getMessage());
         } catch (Exception ex) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error Inesperado",
@@ -208,37 +206,68 @@ public class MainApp extends Application {
     }
 
     /**
-     * Prueba la ejecución de una acción a través del GuardaController y Proxy RBAC.
+     * Muestra la interfaz consolidada con TabPane permitiendo navegar entre los
+     * Dashboards.
      */
-    private void probarOperacionProxyGuardia(VisitaService proxySeguridad, Usuario usuario) {
+    private void mostrarDashboardConsolidado(Usuario usuario, VisitaService proxySeguridad) {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: #1e1e2e;");
+
+        // Barra Superior
+        HBox topBar = new HBox(15);
+        topBar.setPadding(new Insets(15));
+        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setStyle("-fx-background-color: #11111b;");
+
+        Label lblUser = new Label("👤 Sesión Activa: " + usuario.getUsername() + " | Rol: "
+                + (usuario.getRol() != null ? usuario.getRol().getNombre() : "N/A"));
+        lblUser.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+        lblUser.setTextFill(Color.web("#89b4fa"));
+
+        Button btnReporteStream = new Button("📊 Reporte Supervisión (Stream API)");
+        btnReporteStream.setStyle("-fx-background-color: #f9e2af; -fx-text-fill: #11111b; -fx-font-weight: bold;");
+        btnReporteStream.setOnAction(e -> {
+            SupervisorController supervisorController = new SupervisorController(proxySeguridad);
+            SupervisorController.ReporteMetricasVisitas m = supervisorController.obtenerReporteConsolidado();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "SICA - Reporte de Supervisión",
+                    "Módulo de Reportes (Stream API & Lambdas)", m.toString());
+        });
+
+        Button btnCerrarSesion = new Button("🚪 Cerrar Sesión");
+        btnCerrarSesion.setStyle("-fx-background-color: #f38ba8; -fx-text-fill: #11111b; -fx-font-weight: bold;");
+        btnCerrarSesion.setOnAction(e -> {
+            authService.cerrarSesion();
+            primaryStage.setScene(crearEscenaLogin());
+        });
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        topBar.getChildren().addAll(lblUser, spacer, btnReporteStream, btnCerrarSesion);
+        root.setTop(topBar);
+
+        // Control de Pestañas (TabPane)
+        TabPane tabPane = new TabPane();
+
+        // 1. Pestaña Dashboard Guardia
         GuardaController guardaController = new GuardaController(proxySeguridad);
-        Persona persona = new Persona("CC", "12345678", "Visitante", "Prueba", "v@test.com", "555-1234", "VISITANTE");
-        persona.setId(99L);
+        GuardaDashboardView viewGuarda = new GuardaDashboardView(guardaController, personaDAO, usuario);
+        Tab tabGuarda = new Tab("🛡️ Dashboard Guardia", viewGuarda);
+        tabGuarda.setClosable(false);
 
-        try {
-            System.out
-                    .println("[MainApp JavaFX] Intentando registrar acceso mediante GuardaController + Proxy RBAC...");
-            Visita v = guardaController.registrarIngreso(persona, new AccesoPreRegistrado(), usuario, "Prueba JavaFX",
-                    "Ingreso exitoso");
+        // 2. Pestaña Dashboard Funcionario (con Observer en Tiempo Real)
+        FuncionarioController funcionarioController = new FuncionarioController(proxySeguridad);
+        FuncionarioDashboardView viewFuncionario = new FuncionarioDashboardView(funcionarioController,
+                usuario.getUsername(), "Gerencia TI");
+        Tab tabFuncionario = new Tab("🏢 Dashboard Funcionario (Observer UI)", viewFuncionario);
+        tabFuncionario.setClosable(false);
 
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Acción Autorizada (Proxy RBAC)",
-                    "Operación Registrada Exitosamente",
-                    "Visita ID #" + v.getId() + " registrada por el usuario '" + usuario.getUsername()
-                            + "' [Permiso 'VISITA_REGISTRAR' VALIDADO CON ÉXITO].");
+        tabPane.getTabs().addAll(tabGuarda, tabFuncionario);
+        root.setCenter(tabPane);
 
-        } catch (AccesoDenegadoException e) {
-            // Se dispara si el usuario autenticado (ej. 'operador') no tiene el permiso
-            // 'VISITA_REGISTRAR'
-            mostrarAlerta(Alert.AlertType.WARNING, "Acceso Denegado (Proxy RBAC)",
-                    "Operación Bloqueada por el Proxy de Seguridad",
-                    e.getMessage());
-        }
+        primaryStage.setScene(new Scene(root, 900, 680));
     }
 
-    /**
-     * Muestra una ventana emergente de alerta (JavaFX Alert) para dar
-     * retroalimentación visual al usuario.
-     */
     private void mostrarAlerta(Alert.AlertType tipo, String titulo, String cabecera, String contenido) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);
@@ -254,35 +283,47 @@ public class MainApp extends Application {
 
     // DAOs auxiliares en memoria para ejecución gráfica independiente
     static class PersonaDAOInMemoryLocal implements PersonaDAO {
+        private final Map<Long, Persona> DB = new HashMap<>();
+        private final AtomicLong seq = new AtomicLong(1);
+
+        public PersonaDAOInMemoryLocal() {
+            crear(new Persona("CC", "101010", "Juan", "Pérez", "juan@correo.com", "3001112233", "VISITANTE"));
+            crear(new Persona("CC", "202020", "María", "Gómez", "maria@correo.com", "3104445566", "CONTRATISTA"));
+        }
+
         @Override
         public Persona crear(Persona p) {
-            p.setId(1L);
+            p.setId(seq.getAndIncrement());
+            DB.put(p.getId(), p);
             return p;
         }
 
         @Override
         public Optional<Persona> obtenerPorId(Long id) {
-            return Optional.empty();
+            return Optional.ofNullable(DB.get(id));
         }
 
         @Override
         public List<Persona> listarTodos() {
-            return new ArrayList<>();
+            return new ArrayList<>(DB.values());
         }
 
         @Override
         public boolean actualizar(Persona p) {
+            DB.put(p.getId(), p);
             return true;
         }
 
         @Override
         public boolean eliminar(Long id) {
-            return true;
+            return DB.remove(id) != null;
         }
 
         @Override
         public Optional<Persona> buscarPorDocumento(String t, String n) {
-            return Optional.empty();
+            return DB.values().stream()
+                    .filter(p -> p.getTipoDocumento().equalsIgnoreCase(t) && p.getNumeroDocumento().equals(n))
+                    .findFirst();
         }
 
         @Override
@@ -297,37 +338,41 @@ public class MainApp extends Application {
     }
 
     static class VisitaDAOInMemoryLocal implements VisitaDAO {
+        private final Map<Long, Visita> DB = new HashMap<>();
         private final AtomicLong seq = new AtomicLong(500);
 
         @Override
         public Visita crear(Visita v) {
             v.setId(seq.getAndIncrement());
+            DB.put(v.getId(), v);
             return v;
         }
 
         @Override
         public Optional<Visita> obtenerPorId(Long id) {
-            return Optional.empty();
+            return Optional.ofNullable(DB.get(id));
         }
 
         @Override
         public List<Visita> listarTodos() {
-            return new ArrayList<>();
+            return new ArrayList<>(DB.values());
         }
 
         @Override
         public boolean actualizar(Visita v) {
+            DB.put(v.getId(), v);
             return true;
         }
 
         @Override
         public boolean eliminar(Long id) {
-            return true;
+            return DB.remove(id) != null;
         }
 
         @Override
         public Optional<Visita> buscarUltimaVisitaActivaPorPersona(Long pId) {
-            return Optional.empty();
+            return DB.values().stream().filter(v -> v.getPersona() != null && pId.equals(v.getPersona().getId()))
+                    .reduce((f, s) -> s);
         }
 
         @Override
@@ -342,7 +387,12 @@ public class MainApp extends Application {
 
         @Override
         public boolean registrarSalida(Long vId, java.time.LocalDateTime fS, String obs) {
-            return true;
+            Visita v = DB.get(vId);
+            if (v != null) {
+                v.setEstado("FINALIZADA");
+                return true;
+            }
+            return false;
         }
     }
 
