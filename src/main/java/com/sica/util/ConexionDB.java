@@ -25,8 +25,8 @@ public class ConexionDB {
 
     // Configuración predeterminada de la base de datos (se puede parametrizar mediante variables de entorno o archivo de propiedades)
     private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/sica_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    private static final String DEFAULT_USER = "root";
-    private static final String DEFAULT_PASSWORD = "root";
+    private static final String DEFAULT_USER = "sica_user";
+    private static final String DEFAULT_PASSWORD = "Sica2026*";
     private static final String DEFAULT_DRIVER = "com.mysql.cj.jdbc.Driver";
 
     private String url;
