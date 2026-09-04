@@ -9,6 +9,7 @@ import com.sica.dao.PersonaDAO;
 import com.sica.dao.VisitaDAO;
 import com.sica.decorator.AuditoriaVisitaDecorator;
 import com.sica.exception.AccesoDenegadoException;
+import com.sica.model.BitacoraAuditoria; // Importación añadida por seguridad
 import com.sica.model.Persona;
 import com.sica.model.Usuario;
 import com.sica.model.Visita;
@@ -37,8 +38,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Aplicación Principal JavaFX (Presentation Layer - Patrón MVC & Patrones
- * Consolidados).
+ * Aplicación Principal JavaFX (Presentation Layer - Patrón MVC & Patrones Consolidados).
  * Coordina la autenticación (LoginController), los dashboards gráficos por rol
  * (GuardaDashboardView, FuncionarioDashboardView),
  * el proxy de seguridad (SeguridadVisitaServiceProxy) y la generación de
@@ -113,7 +113,7 @@ public class MainApp extends Application {
         lblUser.setTextFill(Color.web("#cdd6f4"));
 
         TextField txtUsername = new TextField();
-        txtUsername.setPromptText("Ej. admin, guardia, funcionario, operador");
+        txtUsername.setPromptText("Ej. admin@zonaacme.com");
         txtUsername.setPrefWidth(260);
         txtUsername.setStyle(
                 "-fx-background-color: #313244; -fx-text-fill: #cdd6f4; -fx-font-size: 14px; -fx-background-radius: 5;");
@@ -142,7 +142,7 @@ public class MainApp extends Application {
         // Enlace del evento con el LoginController
         btnIngresar.setOnAction(e -> procesarLogin(txtUsername.getText(), txtPassword.getText()));
 
-        // Panel de Accesos Rápidos para Prueba de Roles
+        // Panel de Accesos Rápidos para Prueba de Roles (ACTUALIZADO PARA MYSQL)
         Label lblPruebas = new Label("--- Usuarios de Prueba Disponibles ---");
         lblPruebas.setTextFill(Color.web("#6c7086"));
 
@@ -151,26 +151,26 @@ public class MainApp extends Application {
 
         Button btnQuickAdmin = new Button("Admin");
         btnQuickAdmin.setOnAction(e -> {
-            txtUsername.setText("admin");
-            txtPassword.setText("admin123");
+            txtUsername.setText("admin@zonaacme.com");
+            txtPassword.setText("1234");
         });
 
         Button btnQuickGuardia = new Button("Guardia");
         btnQuickGuardia.setOnAction(e -> {
-            txtUsername.setText("guardia");
-            txtPassword.setText("guardia123");
+            txtUsername.setText("carlos@seguridad.com");
+            txtPassword.setText("1234");
         });
 
         Button btnQuickFunc = new Button("Funcionario");
         btnQuickFunc.setOnAction(e -> {
-            txtUsername.setText("funcionario");
-            txtPassword.setText("func123");
+            txtUsername.setText("ana@empresa.com");
+            txtPassword.setText("1234");
         });
 
         Button btnQuickOperador = new Button("Operador (Sin Permisos)");
         btnQuickOperador.setOnAction(e -> {
-            txtUsername.setText("operador");
-            txtPassword.setText("operador123");
+            txtUsername.setText("operador@zonaacme.com");
+            txtPassword.setText("1234");
         });
 
         boxBotonesPrueba.getChildren().addAll(btnQuickAdmin, btnQuickGuardia, btnQuickFunc, btnQuickOperador);
