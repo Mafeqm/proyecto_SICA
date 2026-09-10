@@ -76,4 +76,22 @@ public interface VisitaService {
      * @return Cantidad de visitas activas.
      */
     long contarVisitasActivas(List<Visita> visitas);
+
+    /**
+     * Obtiene el listado de personas (trabajadores e invitados) que se encuentran
+     * actualmente dentro del complejo ("Dentro" / "EN_CURSO") pertenecientes a la
+     * misma empresa que el Funcionario provisto.
+     * 
+     * @param funcionario Usuario autenticado con rol de Funcionario de Empresa.
+     * @return Lista de visitas de personal presente de su empresa.
+     */
+    List<Visita> consultarPersonalPresenteEmpresa(Usuario funcionario);
+
+    /**
+     * Obtiene el listado de personas presentes dentro del complejo para una empresa específica.
+     * 
+     * @param empresaId Identificador de la empresa.
+     * @return Lista de visitas de personal presente de la empresa.
+     */
+    List<Visita> listarPersonalPresentePorEmpresa(Long empresaId);
 }

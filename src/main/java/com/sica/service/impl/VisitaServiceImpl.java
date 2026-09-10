@@ -105,4 +105,25 @@ public class VisitaServiceImpl implements VisitaService {
                 .filter(v -> "EN_CURSO".equalsIgnoreCase(v.getEstado()))
                 .count();
     }
+
+    /**
+     * Obtiene el ID de la empresa del usuario logueado y delega la consulta con JOIN
+     * al DAO para obtener el personal presente en las instalaciones.
+     */
+    @Override
+    public List<Visita> consultarPersonalPresenteEmpresa(Usuario funcionario) {
+        if (funcionario == null || funcionario.getEmpresaId() == null) {
+            return new ArrayList<>();
+        }
+        Long empresaId = funcionario.getEmpresaId();
+        return visitaDAO.listarPersonalPresentePorEmpresa(empresaId);
+    }
+
+    @Override
+    public List<Visita> listarPersonalPresentePorEmpresa(Long empresaId) {
+        if (empresaId == null) {
+            return new ArrayList<>();
+        }
+        return visitaDAO.listarPersonalPresentePorEmpresa(empresaId);
+    }
 }

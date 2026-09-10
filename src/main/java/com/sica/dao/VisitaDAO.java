@@ -94,4 +94,14 @@ public interface VisitaDAO {
      * @return true si se completó el registro de salida correctamente.
      */
     boolean registrarSalida(Long visitaId, LocalDateTime fechaSalida, String observaciones);
+
+    /**
+     * Obtiene la lista de personas (trabajadores e invitados) que actualmente se
+     * encuentran físicamente dentro de las instalaciones ("Dentro" / "EN_CURSO")
+     * y pertenecen a una empresa específica.
+     * 
+     * @param empresaId Identificador de la empresa.
+     * @return Lista de visitas activas de personas asociadas a la empresa.
+     */
+    List<Visita> listarPersonalPresentePorEmpresa(Long empresaId);
 }

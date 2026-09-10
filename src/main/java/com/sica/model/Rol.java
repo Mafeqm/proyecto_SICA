@@ -40,6 +40,18 @@ public class Rol {
     }
 
     /**
+     * Constructor con ID y datos básicos.
+     * 
+     * @param id Identificador único.
+     * @param nombre Nombre del rol.
+     * @param descripcion Descripción del rol.
+     */
+    public Rol(Long id, String nombre, String descripcion) {
+        this(nombre, descripcion);
+        this.id = id;
+    }
+
+    /**
      * Constructor completo.
      * 
      * @param id Identificador único.

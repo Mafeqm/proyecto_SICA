@@ -62,4 +62,31 @@ public class FuncionarioController {
         }
         return false;
     }
+
+    /**
+     * Obtiene la lista de personas (trabajadores e invitados) pertenecientes a la empresa
+     * del funcionario que se encuentran actualmente físicamente dentro de las instalaciones ("Dentro" / "EN_CURSO").
+     * 
+     * @param funcionario Usuario autenticado como Funcionario de Empresa.
+     * @return Lista de visitas de personal presente de su misma empresa.
+     */
+    public List<Visita> obtenerPersonalPresenteEnComplejo(com.sica.model.Usuario funcionario) {
+        if (funcionario == null) {
+            return java.util.Collections.emptyList();
+        }
+        return visitaServiceProxy.consultarPersonalPresenteEmpresa(funcionario);
+    }
+
+    /**
+     * Sobrecarga para consultar personal presente directamente por el identificador de la empresa.
+     * 
+     * @param empresaId Identificador de la empresa.
+     * @return Lista de visitas de personal presente de dicha empresa.
+     */
+    public List<Visita> obtenerPersonalPresentePorEmpresa(Long empresaId) {
+        if (empresaId == null) {
+            return java.util.Collections.emptyList();
+        }
+        return visitaServiceProxy.listarPersonalPresentePorEmpresa(empresaId);
+    }
 }

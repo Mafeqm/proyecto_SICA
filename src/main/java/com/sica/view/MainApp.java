@@ -258,7 +258,7 @@ public class MainApp extends Application {
         // 2. Pestaña Dashboard Funcionario (con Observer en Tiempo Real)
         FuncionarioController funcionarioController = new FuncionarioController(proxySeguridad);
         FuncionarioDashboardView viewFuncionario = new FuncionarioDashboardView(funcionarioController,
-                usuario.getUsername(), "Gerencia TI");
+                usuario.getUsername(), "Gerencia TI", usuario);
         Tab tabFuncionario = new Tab("🏢 Dashboard Funcionario (Observer UI)", viewFuncionario);
         tabFuncionario.setClosable(false);
 
@@ -287,8 +287,9 @@ public class MainApp extends Application {
         private final AtomicLong seq = new AtomicLong(1);
 
         public PersonaDAOInMemoryLocal() {
-            crear(new Persona("CC", "101010", "Juan", "Pérez", "juan@correo.com", "3001112233", "VISITANTE"));
-            crear(new Persona("CC", "202020", "María", "Gómez", "maria@correo.com", "3104445566", "CONTRATISTA"));
+            crear(new Persona("CC", "101010", "Juan", "Pérez", "juan@correo.com", "3001112233", "EMPLEADO", 1L));
+            crear(new Persona("CC", "202020", "María", "Gómez", "maria@correo.com", "3104445566", "VISITANTE", 1L));
+            crear(new Persona("CC", "303030", "Pedro", "Alarcón", "pedro@correo.com", "3158889900", "CONTRATISTA", 2L));
         }
 
         @Override
@@ -393,6 +394,21 @@ public class MainApp extends Application {
                 return true;
             }
             return false;
+        }
+
+        @Override
+        public List<Visita> listarPersonalPresentePorEmpresa(Long empresaId) {
+            List<Visita> resultado = new ArrayList<>();
+            if (empresaId == null)
+                return resultado;
+
+            for (Visita v : DB.values()) {
+                if (v != null && ("EN_CURSO".equalsIgnoreCase(v.getEstado()) || "Dentro".equalsIgnoreCase(v.getEstado()))
+                        && v.getPersona() != null && empresaId.equals(v.getPersona().getEmpresaId())) {
+                    resultado.add(v);
+                }
+            }
+            return resultado;
         }
     }
 

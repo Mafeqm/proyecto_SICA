@@ -254,6 +254,19 @@ public class SicaFase3Test {
             }
             return false;
         }
+
+        @Override
+        public List<Visita> listarPersonalPresentePorEmpresa(Long empresaId) {
+            List<Visita> resultado = new ArrayList<>();
+            if (empresaId == null) return resultado;
+            for (Visita v : DB.values()) {
+                if (v != null && ("EN_CURSO".equalsIgnoreCase(v.getEstado()) || "Dentro".equalsIgnoreCase(v.getEstado()))
+                        && v.getPersona() != null && empresaId.equals(v.getPersona().getEmpresaId())) {
+                    resultado.add(v);
+                }
+            }
+            return resultado;
+        }
     }
 
     static class BitacoraDAOInMemoryTest implements BitacoraAuditoriaDAO {

@@ -54,7 +54,21 @@ El script `data.sql` incluye los siguientes usuarios de prueba (la contraseña p
 | :--- | :--- | :--- |
 | **Superusuario** | `admin@zonaacme.com` | Acceso total al sistema y auditoría. |
 | **Guarda de Seguridad** | `carlos@seguridad.com` | Búsqueda de personas y registro de ingresos/salidas. |
-| **Funcionario Empresa** | `ana@empresa.com` | Recepción de notificaciones y aprobación de visitas. |
+| **Funcionario Empresa** | `ana@empresa.com` | Recepción de notificaciones, aprobación de visitas y consulta de personal presente. |
+
+### 🏢 Nueva Funcionalidad: "Ver Personal Presente en el Complejo" (Rol Funcionario de Empresa)
+Permite a los funcionarios/gerentes de cada empresa (ej. "TecnoGlobal") conocer en tiempo real qué miembros de su equipo (tanto trabajadores como invitados) se encuentran físicamente dentro de las instalaciones del Complejo "Zona Acme", evitando llamadas innecesarias a la garita de seguridad.
+
+* **Acceso y Menú:** Opción disponible exclusivamente para el rol **Funcionario de Empresa** desde el menú de consola (`FuncionarioConsolaView`) o panel gráfico (`FuncionarioDashboardView`).
+* **Lógica de Filtrado Automático:**
+  1. El sistema recupera automáticamente el identificador de la empresa (`empresaId`) asociado a la sesión activa del Funcionario autenticado en la capa de servicio (`VisitaService`).
+  2. La capa DAO (`VisitaDAO` / `VisitaDAOMySQLImpl`) ejecuta una consulta con `JOIN` entre las tablas `visita` y `persona` filtrando donde el estado actual sea `"Dentro"` o `"EN_CURSO"` y el `empresa_id` de la persona coincida con la empresa del funcionario.
+* **Presentación de Resultados:** Muestra en consola una tabla clara y estructurada con los siguientes campos mínimos:
+  * **Nombre Completo:** Nombres y apellidos de la persona.
+  * **Documento de Identidad:** Tipo y número de documento (ej. `CC 1011223344`).
+  * **Tipo de Persona:** Categorizado amigablemente como `"Trabajador"` o `"Invitado"`.
+  * **Fecha y Hora de Entrada:** Estampilla temporal con formato `yyyy-MM-dd HH:mm:ss`.
+* **Manejo de Casos Sin Resultados:** Si no hay personal de la empresa dentro del complejo, se informa claramente con el mensaje: `ℹ️ [INFORMACIÓN] No hay ninguna persona de su empresa actualmente dentro del complejo.`
 
 ---
 **Autor:** María Fernanda Quiñonez Moreno 

@@ -178,6 +178,18 @@ public class SeguridadVisitaServiceProxy implements VisitaService {
         return servicioReal.contarVisitasActivas(visitas);
     }
 
+    @Override
+    public List<Visita> consultarPersonalPresenteEmpresa(Usuario funcionario) {
+        // Usa el usuario autenticado del proxy si el parámetro no se proporciona o valida coherencia
+        Usuario usuarioAUsar = funcionario != null ? funcionario : usuarioAutenticado;
+        return servicioReal.consultarPersonalPresenteEmpresa(usuarioAUsar);
+    }
+
+    @Override
+    public List<Visita> listarPersonalPresentePorEmpresa(Long empresaId) {
+        return servicioReal.listarPersonalPresentePorEmpresa(empresaId);
+    }
+
     public Usuario getUsuarioAutenticado() {
         return usuarioAutenticado;
     }

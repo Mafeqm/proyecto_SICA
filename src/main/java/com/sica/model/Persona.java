@@ -20,6 +20,7 @@ public class Persona {
     private String email;
     private String telefono;
     private String tipoPersona; // ej. EMPLEADO, VISITANTE, CONTRATISTA
+    private Long empresaId;
     private boolean activo;
     private LocalDateTime fechaRegistro;
 
@@ -55,6 +56,24 @@ public class Persona {
     }
 
     /**
+     * Constructor parcial con empresa.
+     * 
+     * @param tipoDocumento   Tipo de documento de identidad.
+     * @param numeroDocumento Número de documento.
+     * @param nombres         Nombres completos.
+     * @param apellidos       Apellidos completos.
+     * @param email           Correo electrónico de contacto.
+     * @param telefono        Teléfono de contacto.
+     * @param tipoPersona     Categoría (EMPLEADO, VISITANTE, CONTRATISTA).
+     * @param empresaId       Identificador de la empresa.
+     */
+    public Persona(String tipoDocumento, String numeroDocumento, String nombres, String apellidos,
+            String email, String telefono, String tipoPersona, Long empresaId) {
+        this(tipoDocumento, numeroDocumento, nombres, apellidos, email, telefono, tipoPersona);
+        this.empresaId = empresaId;
+    }
+
+    /**
      * Constructor completo.
      * 
      * @param id              Identificador único.
@@ -80,6 +99,27 @@ public class Persona {
         this.tipoPersona = tipoPersona;
         this.activo = activo;
         this.fechaRegistro = fechaRegistro;
+    }
+
+    /**
+     * Constructor completo con Empresa.
+     * 
+     * @param id              Identificador único.
+     * @param tipoDocumento   Tipo de documento.
+     * @param numeroDocumento Número de documento.
+     * @param nombres         Nombres.
+     * @param apellidos       Apellidos.
+     * @param email           Correo electrónico.
+     * @param telefono        Teléfono.
+     * @param tipoPersona     Clasificación.
+     * @param empresaId       Identificador de la empresa.
+     * @param activo          Estado activo/inactivo.
+     * @param fechaRegistro   Fecha de registro en el sistema.
+     */
+    public Persona(Long id, String tipoDocumento, String numeroDocumento, String nombres, String apellidos,
+            String email, String telefono, String tipoPersona, Long empresaId, boolean activo, LocalDateTime fechaRegistro) {
+        this(id, tipoDocumento, numeroDocumento, nombres, apellidos, email, telefono, tipoPersona, activo, fechaRegistro);
+        this.empresaId = empresaId;
     }
 
     // Getters y Setters
@@ -152,6 +192,14 @@ public class Persona {
         this.tipoPersona = tipoPersona;
     }
 
+    public Long getEmpresaId() {
+        return empresaId;
+    }
+
+    public void setEmpresaId(Long empresaId) {
+        this.empresaId = empresaId;
+    }
+
     public boolean isActivo() {
         return activo;
     }
@@ -193,6 +241,7 @@ public class Persona {
                 ", numeroDocumento='" + numeroDocumento + '\'' +
                 ", nombreCompleto='" + getNombreCompleto() + '\'' +
                 ", tipoPersona='" + tipoPersona + '\'' +
+                ", empresaId=" + empresaId +
                 ", activo=" + activo +
                 '}';
     }
