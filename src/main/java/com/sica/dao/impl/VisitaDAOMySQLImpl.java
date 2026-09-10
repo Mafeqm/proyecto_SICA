@@ -47,6 +47,10 @@ public class VisitaDAOMySQLImpl implements VisitaDAO {
     private static final String SQL_SELECT_BY_RANGO_FECHAS = SQL_BASE_SELECT +
             "WHERE v.fecha_entrada BETWEEN ? AND ? ORDER BY v.fecha_entrada DESC";
 
+    private static final String SQL_SELECT_PRESENTES_POR_EMPRESA = SQL_BASE_SELECT +
+            "WHERE (v.estado = 'EN_CURSO' OR v.estado = 'Dentro' OR v.estado = 'DENTRO') AND p.empresa_id = ? " +
+            "ORDER BY v.fecha_entrada DESC";
+
     private static final String SQL_UPDATE = "UPDATE visita SET persona_id = ?, usuario_registro_id = ?, fecha_entrada = ?, fecha_salida = ?, motivo = ?, estado = ?, observaciones = ? "
             +
             "WHERE id = ?";
@@ -263,6 +267,27 @@ public class VisitaDAOMySQLImpl implements VisitaDAO {
         }
     }
 
+    @Override
+    public List<Visita> listarPersonalPresentePorEmpresa(Long empresaId) {
+        List<Visita> visitas = new ArrayList<>();
+        if (empresaId == null)
+            return visitas;
+
+        try (Connection conn = ConexionDB.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_PRESENTES_POR_EMPRESA)) {
+
+            stmt.setLong(1, empresaId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    visitas.add(mapearResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[VisitaDAOMySQLImpl] Error al listar personal presente por empresa: " + e.getMessage());
+        }
+        return visitas;
+    }
+
     private Visita mapearResultSet(ResultSet rs) throws SQLException {
         Visita v = new Visita();
         v.setId(rs.getLong("v_id"));
@@ -278,6 +303,14 @@ public class VisitaDAOMySQLImpl implements VisitaDAO {
         p.setTelefono(rs.getString("telefono"));
         p.setTipoPersona(rs.getString("tipo_persona"));
         p.setActivo(rs.getBoolean("activo"));
+        try {
+            long empId = rs.getLong("empresa_id");
+            if (!rs.wasNull()) {
+                p.setEmpresaId(empId);
+            }
+        } catch (SQLException ignored) {
+            // Columna empresa_id opcional si no está presente en la proyección
+        }
         Timestamp tsP = rs.getTimestamp("fecha_registro");
         if (tsP != null)
             p.setFechaRegistro(tsP.toLocalDateTime());
