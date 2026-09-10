@@ -20,6 +20,9 @@ public class Usuario {
     private LocalDateTime fechaCreacion;
     private Rol rol;
 
+    private Long empresaId;
+    private String empresaNombre;
+
     /**
      * Constructor por defecto. Asigna la fecha actual y estado activo por defecto.
      */
@@ -64,6 +67,26 @@ public class Usuario {
         this.activo = activo;
         this.fechaCreacion = fechaCreacion;
         this.rol = rol;
+    }
+
+    /**
+     * Constructor completo con Empresa.
+     * 
+     * @param id            Identificador único.
+     * @param username      Nombre de usuario.
+     * @param passwordHash  Hash de la contraseña.
+     * @param email         Correo electrónico.
+     * @param activo        Estado del usuario en el sistema.
+     * @param fechaCreacion Fecha y hora de creación.
+     * @param rol           Rol asignado.
+     * @param empresaId     Identificador de la empresa asociada.
+     * @param empresaNombre Nombre de la empresa.
+     */
+    public Usuario(Long id, String username, String passwordHash, String email, boolean activo,
+            LocalDateTime fechaCreacion, Rol rol, Long empresaId, String empresaNombre) {
+        this(id, username, passwordHash, email, activo, fechaCreacion, rol);
+        this.empresaId = empresaId;
+        this.empresaNombre = empresaNombre;
     }
 
     // Getters y Setters
@@ -124,6 +147,22 @@ public class Usuario {
         this.rol = rol;
     }
 
+    public Long getEmpresaId() {
+        return empresaId;
+    }
+
+    public void setEmpresaId(Long empresaId) {
+        this.empresaId = empresaId;
+    }
+
+    public String getEmpresaNombre() {
+        return empresaNombre;
+    }
+
+    public void setEmpresaNombre(String empresaNombre) {
+        this.empresaNombre = empresaNombre;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -146,6 +185,8 @@ public class Usuario {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", activo=" + activo +
+                ", empresaId=" + empresaId +
+                ", empresaNombre='" + empresaNombre + '\'' +
                 ", fechaCreacion=" + fechaCreacion +
                 ", rol=" + (rol != null ? rol.getNombre() : "SIN_ROL") +
                 '}';
