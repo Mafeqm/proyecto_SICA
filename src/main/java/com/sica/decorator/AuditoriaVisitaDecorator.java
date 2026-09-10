@@ -125,4 +125,14 @@ public class AuditoriaVisitaDecorator implements VisitaService {
     public long contarVisitasActivas(List<Visita> visitas) {
         return servicioDecorado.contarVisitasActivas(visitas);
     }
+
+    @Override
+    public List<Visita> consultarPersonalPresenteEmpresa(Usuario funcionario) {
+        return servicioDecorado.consultarPersonalPresenteEmpresa(funcionario);
+    }
+
+    @Override
+    public List<Visita> listarPersonalPresentePorEmpresa(Long empresaId) {
+        return servicioDecorado.listarPersonalPresentePorEmpresa(empresaId);
+    }
 }
