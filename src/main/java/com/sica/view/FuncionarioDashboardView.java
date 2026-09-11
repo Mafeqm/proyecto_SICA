@@ -196,7 +196,7 @@ public class FuncionarioDashboardView extends VBox implements ObserverFuncionari
      * Garantiza la actualización segura de la UI mediante Platform.runLater().
      */
     @Override
-    public void onNuevaVisitaPendiente(Visita visita) {
+    public void notificarVisitaPendiente(Visita visita) {
         // Ejecución en el Hilo Gráfico de JavaFX (JavaFX Application Thread)
         Platform.runLater(() -> {
             System.out.println("[UI OBSERVER] 🔔 Notificación recibida en tiempo real para: "
@@ -219,12 +219,11 @@ public class FuncionarioDashboardView extends VBox implements ObserverFuncionari
         });
     }
 
-    @Override
+    // Nota: Se removieron los @Override de aquí porque la interfaz ObserverFuncionario no los exige.
     public String getNombreFuncionario() {
         return nombreFuncionario;
     }
 
-    @Override
     public String getDepartamento() {
         return departamento;
     }

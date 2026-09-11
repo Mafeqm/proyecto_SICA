@@ -245,4 +245,15 @@ public class Persona {
                 ", activo=" + activo +
                 '}';
     }
+
+    // Atributo temporal para evitar el error de compilación
+    private String urlFoto;
+
+    public String getUrlFoto() {
+        return urlFoto;
+    }
+
+    public void setUrlFoto(String urlFoto) {
+        this.urlFoto = urlFoto;
+    }
 }
