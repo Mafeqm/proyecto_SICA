@@ -36,6 +36,7 @@ public class FuncionarioDashboardView extends VBox implements ObserverFuncionari
     private final FuncionarioController funcionarioController;
     private final String nombreFuncionario;
     private final String departamento;
+    private com.sica.model.Usuario usuarioLogueado;
 
     private TableView<Visita> tblVisitas;
     private ObservableList<Visita> listaVisitasObservable;
@@ -43,9 +44,15 @@ public class FuncionarioDashboardView extends VBox implements ObserverFuncionari
 
     public FuncionarioDashboardView(FuncionarioController funcionarioController, String nombreFuncionario,
             String departamento) {
+        this(funcionarioController, nombreFuncionario, departamento, null);
+    }
+
+    public FuncionarioDashboardView(FuncionarioController funcionarioController, String nombreFuncionario,
+            String departamento, com.sica.model.Usuario usuarioLogueado) {
         this.funcionarioController = funcionarioController;
         this.nombreFuncionario = nombreFuncionario;
         this.departamento = departamento;
+        this.usuarioLogueado = usuarioLogueado;
 
         inicializarComponentes();
 
@@ -121,12 +128,31 @@ public class FuncionarioDashboardView extends VBox implements ObserverFuncionari
         Button btnRefrescar = new Button("🔄 Refrescar Tabla");
         btnRefrescar.setOnAction(e -> cargarVisitasPendientes());
 
-        boxBotones.getChildren().addAll(btnAprobar, btnRechazar, btnRefrescar);
+        Button btnPersonalPresente = new Button("🏢 Ver Personal Presente en el Complejo");
+        btnPersonalPresente.setStyle(
+                "-fx-background-color: #89b4fa; -fx-text-fill: #11111b; -fx-font-weight: bold; -fx-font-size: 13px;");
+        btnPersonalPresente.setOnAction(e -> mostrarVentanaPersonalPresente());
+
+        boxBotones.getChildren().addAll(btnAprobar, btnRechazar, btnRefrescar, btnPersonalPresente);
 
         this.getChildren().addAll(lblTitulo, lblSubtitulo, lblEstadoObserver, tblVisitas, boxBotones);
 
         // Cargar datos iniciales
         cargarVisitasPendientes();
+    }
+
+    private void mostrarVentanaPersonalPresente() {
+        FuncionarioConsolaView consolaView = new FuncionarioConsolaView(funcionarioController);
+        String reporte = consolaView.mostrarPersonalPresenteEnConsola(usuarioLogueado);
+
+        List<Visita> presentes = funcionarioController.obtenerPersonalPresenteEnComplejo(usuarioLogueado);
+        if (presentes.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Personal Presente en el Complejo",
+                    "No hay ninguna persona de su empresa actualmente dentro del complejo.");
+        } else {
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Personal Presente en el Complejo",
+                    "Se encontraron " + presentes.size() + " personas de su empresa dentro del complejo:\n\n" + reporte);
+        }
     }
 
     public void cargarVisitasPendientes() {
